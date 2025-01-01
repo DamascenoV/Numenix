@@ -72,6 +72,8 @@ defmodule NumenixWeb.Router do
       live "/currencies/:id", CurrencyLive.Show, :show
       live "/currencies/:id/show/edit", CurrencyLive.Show, :edit
 
+      live "/types", TypeLive.Index, :index
+
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
     end
