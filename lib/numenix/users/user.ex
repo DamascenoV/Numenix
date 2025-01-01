@@ -10,6 +10,7 @@ defmodule Numenix.Users.User do
     field :current_password, :string, virtual: true, redact: true
     field :locale, :string, default: "en"
     field :confirmed_at, :utc_datetime
+    has_many :currencies, Numenix.Currencies.Currency
 
     timestamps(type: :utc_datetime)
   end

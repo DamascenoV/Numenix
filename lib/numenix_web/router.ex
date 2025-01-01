@@ -66,6 +66,12 @@ defmodule NumenixWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{NumenixWeb.UserAuth, :ensure_authenticated}] do
+      live "/currencies", CurrencyLive.Index, :index
+      live "/currencies/new", CurrencyLive.Index, :new
+      live "/currencies/:id/edit", CurrencyLive.Index, :edit
+      live "/currencies/:id", CurrencyLive.Show, :show
+      live "/currencies/:id/show/edit", CurrencyLive.Show, :edit
+
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
     end
