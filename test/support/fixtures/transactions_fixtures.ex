@@ -18,4 +18,19 @@ defmodule Numenix.TransactionsFixtures do
 
     type
   end
+
+  @doc """
+  Generate a category.
+  """
+  def category_fixture(user = %Numenix.Users.User{}, attrs \\ %{}) do
+    attrs =
+      Enum.into(attrs, %{
+        name: "some name"
+      })
+
+    {:ok, category} =
+      Numenix.Transactions.create_category(user, attrs)
+
+    Numenix.Transactions.get_category!(category.id)
+  end
 end

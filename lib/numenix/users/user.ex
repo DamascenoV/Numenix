@@ -11,6 +11,7 @@ defmodule Numenix.Users.User do
     field :locale, :string, default: "en"
     field :confirmed_at, :utc_datetime
     has_many :currencies, Numenix.Currencies.Currency
+    has_many :categories, Numenix.Transactions.Category
 
     timestamps(type: :utc_datetime)
   end
