@@ -8,6 +8,7 @@ defmodule Numenix.Currencies.Currency do
     field :name, :string
     field :symbol, :string
     belongs_to :user, Numenix.Users.User
+    has_many :account, Numenix.Accounts.Account
 
     timestamps(type: :utc_datetime)
   end

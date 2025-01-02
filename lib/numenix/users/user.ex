@@ -12,6 +12,7 @@ defmodule Numenix.Users.User do
     field :confirmed_at, :utc_datetime
     has_many :currencies, Numenix.Currencies.Currency
     has_many :categories, Numenix.Transactions.Category
+    has_many :accounts, Numenix.Accounts.Account
 
     timestamps(type: :utc_datetime)
   end
