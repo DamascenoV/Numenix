@@ -35,3 +35,5 @@ numenix-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# DB Database Folder Docker
+/data
