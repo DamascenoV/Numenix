@@ -13,6 +13,7 @@ config :numenix, Numenix.Repo,
   password: "postgres",
   hostname: "localhost",
   database: "numenix_test#{System.get_env("MIX_TEST_PARTITION")}",
+  port: 15432,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 

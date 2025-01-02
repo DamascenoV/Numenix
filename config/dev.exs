@@ -6,6 +6,7 @@ config :numenix, Numenix.Repo,
   password: "postgres",
   hostname: "localhost",
   database: "numenix_dev",
+  port: 15432,
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
