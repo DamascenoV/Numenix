@@ -34,6 +34,7 @@ defmodule NumenixWeb.CategoryLive.Show do
         title={@page_title}
         action={@live_action}
         category={@category}
+        types={@types}
         patch={~p"/categories/#{@category}"}
       />
     </.modal>
@@ -42,7 +43,7 @@ defmodule NumenixWeb.CategoryLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok, socket |> assign(:types, Transactions.list_types())}
   end
 
   @impl true

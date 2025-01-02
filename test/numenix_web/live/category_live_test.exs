@@ -90,28 +90,27 @@ defmodule NumenixWeb.CategoryLiveTest do
       assert html =~ category.name
     end
 
-    # TODO Fix this one
-    # test "updates category within modal", %{conn: conn, category: category, user: user} do
-    #   {:ok, show_live, _html} = live(conn |> log_in_user(user), ~p"/categories/#{category}")
-    #
-    #   assert show_live |> element("a", "Edit") |> render_click() =~
-    #            "Edit Category"
-    #
-    #   assert_patch(show_live, ~p"/categories/#{category}/show/edit")
-    #
-    #   assert show_live
-    #          |> form("#category-form", category: @invalid_attrs)
-    #          |> render_change() =~ "can&#39;t be blank"
-    #
-    #   assert show_live
-    #          |> form("#category-form", category: @update_attrs)
-    #          |> render_submit()
-    #
-    #   assert_patch(show_live, ~p"/categories/#{category}")
-    #
-    #   html = render(show_live)
-    #   assert html =~ "Category updated successfully"
-    #   assert html =~ "some updated name"
-    # end
+    test "updates category within modal", %{conn: conn, category: category, user: user} do
+      {:ok, show_live, _html} = live(conn |> log_in_user(user), ~p"/categories/#{category}")
+
+      assert show_live |> element("a", "Edit") |> render_click() =~
+               "Edit Category"
+
+      assert_patch(show_live, ~p"/categories/#{category}/show/edit")
+
+      assert show_live
+             |> form("#category-form", category: @invalid_attrs)
+             |> render_change() =~ "can&#39;t be blank"
+
+      assert show_live
+             |> form("#category-form", category: @update_attrs)
+             |> render_submit()
+
+      assert_patch(show_live, ~p"/categories/#{category}")
+
+      html = render(show_live)
+      assert html =~ "Category updated successfully"
+      assert html =~ "some updated name"
+    end
   end
 end
