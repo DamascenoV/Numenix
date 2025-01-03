@@ -15,7 +15,12 @@
 
 <.back navigate={~p"/account"}>Back to account</.back>
 
-<.modal :if={@live_action == :edit} id="account-modal" show on_cancel={JS.patch(~p"/account/#{@account}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="account-modal"
+  show
+  on_cancel={JS.patch(~p"/account/#{@account}")}
+>
   <.live_component
     module={NumenixWeb.AccountLive.FormComponent}
     id={@account.id}
