@@ -1,8 +1,7 @@
 # Numenix
 
-**NOTES**
-
-* This project is still under development and primarily intended for personal use. I created it to deepen my understanding of Elixir and Phoenix while eliminating the need for managing my finances using Excel or Word documents.
+> [!NOTE]
+> This project is still under development and primarily intended for personal use. I created it to deepen my understanding of Elixir and Phoenix while eliminating the need for managing my finances using Excel or Word documents.
 
 **Origin of Name**
 
