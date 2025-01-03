@@ -105,7 +105,14 @@ defmodule Numenix.AccountsTest do
       user = user_fixture()
       currency = currency_fixture(user)
       account = account_fixture(user, %{currency_id: currency.id})
-      valid_attrs = %{name: "some name", done: true, description: "some description", amount: "120.5", account_id: account.id}
+
+      valid_attrs = %{
+        name: "some name",
+        done: true,
+        description: "some description",
+        amount: "120.5",
+        account_id: account.id
+      }
 
       assert {:ok, %Goal{} = goal} = Accounts.create_goal(user, valid_attrs)
       assert goal.name == "some name"
@@ -125,7 +132,14 @@ defmodule Numenix.AccountsTest do
       currency = currency_fixture(user)
       account = account_fixture(user, %{currency_id: currency.id})
       goal = goal_fixture(user, %{account_id: account.id})
-      update_attrs = %{name: "some updated name", done: false, description: "some updated description", amount: "456.7", account_id: account.id}
+
+      update_attrs = %{
+        name: "some updated name",
+        done: false,
+        description: "some updated description",
+        amount: "456.7",
+        account_id: account.id
+      }
 
       assert {:ok, %Goal{} = goal} = Accounts.update_goal(goal, update_attrs)
       assert goal.name == "some updated name"

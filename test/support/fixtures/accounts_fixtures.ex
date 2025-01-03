@@ -24,7 +24,8 @@ defmodule Numenix.AccountsFixtures do
   Generate a goal.
   """
   def goal_fixture(user, attrs \\ %{}) do
-      attrs = Enum.into(attrs, %{
+    attrs =
+      Enum.into(attrs, %{
         amount: "120.5",
         description: "some description",
         done: true,

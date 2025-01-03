@@ -7,7 +7,12 @@ defmodule NumenixWeb.GoalLiveTest do
   import Numenix.UsersFixtures
 
   @create_attrs %{name: "some name", done: true, description: "some description", amount: "120.5"}
-  @update_attrs %{name: "some updated name", done: false, description: "some updated description", amount: "456.7"}
+  @update_attrs %{
+    name: "some updated name",
+    done: false,
+    description: "some updated description",
+    amount: "456.7"
+  }
   @invalid_attrs %{name: nil, done: false, description: nil, amount: nil}
 
   defp create_goal(_) do
