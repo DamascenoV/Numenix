@@ -20,6 +20,20 @@ jobs:
       matrix:
         otp: ['26.1.2']
         elixir: ['1.15.0', '1.16.0', '1.17.0', '1.18.0']
+    services:
+      postgres:
+        image: postgres:14
+        ports:
+          - 15432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
     steps:
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
@@ -63,6 +77,18 @@ jobs:
     - name: Install dependencies
       run: mix deps.get
 
+    - name: Wait for PostgreSQL
+      run: |
+        until pg_isready -h localhost -p 15432 -U postgres; do
+          echo "Waiting for PostgreSQL..."
+          sleep 1
+        done
+
+    - name: Setup Database
+      run: |
+        mix ecto.create
+        mix ecto.migrate
+
     - name: Compiles without warnings
       run: mix compile --warnings-as-errors
 
@@ -71,3 +97,4 @@ jobs:
 
     - name: Run tests
       run: mix test
+
