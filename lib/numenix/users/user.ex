@@ -13,6 +13,7 @@ defmodule Numenix.Users.User do
     has_many :currencies, Numenix.Currencies.Currency
     has_many :categories, Numenix.Transactions.Category
     has_many :accounts, Numenix.Accounts.Account
+    has_many :goals, Numenix.Accounts.Goal
 
     timestamps(type: :utc_datetime)
   end

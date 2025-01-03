@@ -78,6 +78,12 @@ defmodule NumenixWeb.Router do
       live "/currencies/:id", CurrencyLive.Show, :show
       live "/currencies/:id/show/edit", CurrencyLive.Show, :edit
 
+      live "/goals", GoalLive.Index, :index
+      live "/goals/new", GoalLive.Index, :new
+      live "/goals/:id/edit", GoalLive.Index, :edit
+      live "/goals/:id", GoalLive.Show, :show
+      live "/goals/:id/show/edit", GoalLive.Show, :edit
+
       live "/types", TypeLive.Index, :index
 
       live "/categories", CategoryLive.Index, :index

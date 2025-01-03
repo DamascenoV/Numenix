@@ -4,11 +4,12 @@ defmodule Numenix.Accounts.Account do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
-  schema "account" do
+  schema "accounts" do
     field :name, :string
     field :balance, :decimal
     belongs_to :user, Numenix.Users.User
     belongs_to :currency, Numenix.Currencies.Currency
+    has_many :goals, Numenix.Accounts.Goal
 
     timestamps(type: :utc_datetime)
   end

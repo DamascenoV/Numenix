@@ -2,7 +2,7 @@ defmodule Numenix.Repo.Migrations.CreateAccount do
   use Ecto.Migration
 
   def change do
-    create table(:account, primary_key: false) do
+    create table(:accounts, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :string
       add :balance, :decimal
@@ -12,7 +12,7 @@ defmodule Numenix.Repo.Migrations.CreateAccount do
       timestamps(type: :utc_datetime)
     end
 
-    create index(:account, [:user_id])
-    create index(:account, [:currency_id])
+    create index(:accounts, [:user_id])
+    create index(:accounts, [:currency_id])
   end
 end

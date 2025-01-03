@@ -7,6 +7,7 @@ defmodule Numenix.Accounts do
   alias Numenix.Repo
 
   alias Numenix.Accounts.Account
+  alias Numenix.Accounts.Goal
   alias Numenix.Users.User
 
   @doc """
@@ -108,5 +109,106 @@ defmodule Numenix.Accounts do
   """
   def change_account(%Account{} = account, attrs \\ %{}) do
     Account.changeset(account, attrs)
+  end
+
+  @doc """
+  Returns the list of goals.
+
+  ## Examples
+
+      iex> list_goals(%User{})
+      [%Goal{}, ...]
+
+  """
+  def list_goals(user = %User{}) do
+    Repo.all(from g in Goal, where: g.user_id == ^user.id, preload: :account)
+  end
+
+  @doc """
+  Gets a single goal.
+
+  Raises `Ecto.NoResultsError` if the Goal does not exist.
+
+  ## Examples
+
+      iex> get_goal!(123)
+      %Goal{}
+
+      iex> get_goal!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_goal!(id), do: Repo.get!(Goal, id) |> Repo.preload([:account])
+
+  @doc """
+  Creates a goal.
+
+  ## Examples
+
+      iex> create_goal(%User{}, %{field: value})
+      {:ok, %Goal{}}
+
+      iex> create_goal(%User{}, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_goal(user = %User{}, attrs \\ %{}) do
+    goal =
+      user
+      |> Ecto.build_assoc(:goals)
+      |> Goal.changeset(attrs)
+      |> Repo.insert()
+
+    case goal do
+      {:ok, goal} -> {:ok, goal |> Repo.preload([:account])}
+      {:error, changeset} -> {:error, changeset}
+    end
+  end
+
+  @doc """
+  Updates a goal.
+
+  ## Examples
+
+      iex> update_goal(goal, %{field: new_value})
+      {:ok, %Goal{}}
+
+      iex> update_goal(goal, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_goal(%Goal{} = goal, attrs) do
+    goal
+    |> Goal.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a goal.
+
+  ## Examples
+
+      iex> delete_goal(goal)
+      {:ok, %Goal{}}
+
+      iex> delete_goal(goal)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_goal(%Goal{} = goal) do
+    Repo.delete(goal)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking goal changes.
+
+  ## Examples
+
+      iex> change_goal(goal)
+      %Ecto.Changeset{data: %Goal{}}
+
+  """
+  def change_goal(%Goal{} = goal, attrs \\ %{}) do
+    Goal.changeset(goal, attrs)
   end
 end

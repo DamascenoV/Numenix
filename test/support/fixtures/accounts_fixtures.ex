@@ -19,4 +19,21 @@ defmodule Numenix.AccountsFixtures do
 
     account.id |> Numenix.Accounts.get_account!()
   end
+
+  @doc """
+  Generate a goal.
+  """
+  def goal_fixture(user, attrs \\ %{}) do
+      attrs = Enum.into(attrs, %{
+        amount: "120.5",
+        description: "some description",
+        done: true,
+        name: "some name"
+      })
+
+    {:ok, goal} =
+      Numenix.Accounts.create_goal(user, attrs)
+
+    goal.id |> Numenix.Accounts.get_goal!()
+  end
 end
