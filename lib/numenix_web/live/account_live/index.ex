@@ -66,7 +66,7 @@ defmodule NumenixWeb.AccountLive.Index do
 
     {:ok,
      socket
-     |> stream(:accounts, Accounts.list_account(user))
+     |> stream(:accounts, Accounts.list_accounts(user))
      |> assign(:currencies, Numenix.Currencies.list_currencies(user))}
   end
 

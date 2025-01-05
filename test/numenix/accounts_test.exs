@@ -16,7 +16,7 @@ defmodule Numenix.AccountsTest do
       user = user_fixture()
       currency = currency_fixture(user)
       account = account_fixture(user, %{currency_id: currency.id})
-      assert Accounts.list_account(user) == [account]
+      assert Accounts.list_accounts(user) == [account]
     end
 
     test "get_account!/1 returns the account with given id" do

@@ -9,17 +9,19 @@ defmodule Numenix.Accounts do
   alias Numenix.Accounts.Account
   alias Numenix.Accounts.Goal
   alias Numenix.Users.User
+  alias Numenix.Transactions.Transaction
+  alias Numenix.Transactions
 
   @doc """
   Returns the list of account.
 
   ## Examples
 
-      iex> list_account(user = %User{})
+      iex> list_accounts(user = %User{})
       [%Account{}, ...]
 
   """
-  def list_account(user = %User{}) do
+  def list_accounts(user = %User{}) do
     Repo.all(from a in Account, where: a.user_id == ^user.id, preload: :currency)
   end
 
@@ -79,6 +81,66 @@ defmodule Numenix.Accounts do
   def update_account(%Account{} = account, attrs) do
     account
     |> Account.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Updates a account balance.
+
+  ## Examples
+
+      iex> update_account_balance(:insert, transaction = %Transaction{})
+      {:ok, %Account{}}
+
+      iex> update_account_balance(:insert, transaction = %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_account_balance(:insert, transaction = %Transaction{}) do
+    type = Transactions.get_type!(transaction.type_id)
+    account = get_account!(transaction.account_id)
+
+    amount =
+      case type.subtraction do
+        false -> Decimal.to_float(transaction.amount) + Decimal.to_float(account.balance)
+        true -> Decimal.to_float(account.balance) - Decimal.to_float(transaction.amount)
+      end
+
+    account
+    |> Account.changeset(%{balance: amount})
+    |> Repo.update()
+  end
+
+  def update_account_balance(:edit, transaction = %Transaction{}) do
+    type = Transactions.get_type!(transaction.type_id)
+    account = get_account!(transaction.account_id)
+
+    amount =
+      case type.subtraction do
+        false ->
+          Decimal.to_float(transaction.amount) + Decimal.to_float(transaction.account_balance)
+
+        true ->
+          Decimal.to_float(transaction.account_balance) - Decimal.to_float(transaction.amount)
+      end
+
+    account
+    |> Account.changeset(%{balance: amount})
+    |> Repo.update()
+  end
+
+  def update_account_balance(:delete, transaction = %Transaction{}) do
+    type = Transactions.get_type!(transaction.type_id)
+    account = get_account!(transaction.account_id)
+
+    amount =
+      case type.subtraction do
+        false -> Decimal.to_float(account.balance) - Decimal.to_float(transaction.amount)
+        true -> Decimal.to_float(transaction.amount) + Decimal.to_float(account.balance)
+      end
+
+    account
+    |> Account.changeset(%{balance: amount})
     |> Repo.update()
   end
 

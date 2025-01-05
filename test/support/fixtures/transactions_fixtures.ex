@@ -33,4 +33,20 @@ defmodule Numenix.TransactionsFixtures do
 
     Numenix.Transactions.get_category!(category.id)
   end
+
+  @doc """
+  Generate a transaction.
+  """
+  def transaction_fixture(attrs \\ %{}) do
+    {:ok, transaction} =
+      attrs
+      |> Enum.into(%{
+        "amount" => "120.5",
+        "date" => ~D[2025-01-04],
+        "description" => "some description"
+      })
+      |> Numenix.Transactions.create_transaction()
+
+    Numenix.Transactions.get_transaction!(transaction.id)
+  end
 end
