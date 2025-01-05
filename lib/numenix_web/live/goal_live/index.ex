@@ -62,7 +62,7 @@ defmodule NumenixWeb.GoalLive.Index do
     {:ok,
      socket
      |> stream(:goals, Accounts.list_goals(socket.assigns.current_user))
-     |> assign(:accounts, Accounts.list_account(socket.assigns.current_user))}
+     |> assign(:accounts, Accounts.list_accounts(socket.assigns.current_user))}
   end
 
   @impl true
