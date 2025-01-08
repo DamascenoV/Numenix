@@ -350,4 +350,23 @@ defmodule Numenix.Users do
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
+
+  @doc """
+  Update user locale
+  """
+  def update_user_locale(user, locale) do
+    user
+    |> User.locale_changeset(%{locale: locale})
+    |> Repo.update()
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for changing the user locale.
+  ## Examples
+      iex> change_user_locale(user)
+      %Ecto.Changeset{data: %User{}}
+  """
+  def change_user_locale(user, attrs \\ %{}) do
+    User.locale_changeset(user, attrs)
+  end
 end

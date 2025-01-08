@@ -69,6 +69,20 @@ defmodule NumenixWeb.UserSettingsLive do
           </:actions>
         </.simple_form>
       </div>
+      <div>
+        <.simple_form for={@locale_form} id="locale_form" phx-submit="update_locale">
+          <.input
+            field={@locale_form[:locale]}
+            type="select"
+            label="Locale"
+            options={Gettext.known_locales(NumenixWeb.Gettext)}
+            required
+          />
+          <:actions>
+            <.button phx-disable-with="Changing...">Change Locale</.button>
+          </:actions>
+        </.simple_form>
+      </div>
     </div>
     """
   end
@@ -90,6 +104,7 @@ defmodule NumenixWeb.UserSettingsLive do
     user = socket.assigns.current_user
     email_changeset = Users.change_user_email(user)
     password_changeset = Users.change_user_password(user)
+    locale_changeset = Users.change_user_locale(user)
 
     socket =
       socket
@@ -99,6 +114,7 @@ defmodule NumenixWeb.UserSettingsLive do
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:trigger_submit, false)
+      |> assign(:locale_form, to_form(locale_changeset))
 
     {:ok, socket}
   end
@@ -162,6 +178,25 @@ defmodule NumenixWeb.UserSettingsLive do
 
       {:error, changeset} ->
         {:noreply, assign(socket, password_form: to_form(changeset))}
+    end
+  end
+
+  def handle_event("update_locale", params, socket) do
+    %{"user" => %{"locale" => locale}} = params
+    user = socket.assigns.current_user
+
+    case Users.update_user_locale(user, locale) do
+      {:ok, user} ->
+        locale_form =
+          user
+          |> Users.change_user_locale()
+          |> to_form()
+
+        info = "Locale updated"
+        {:noreply, assign(socket |> put_flash(:info, info), locale_form: locale_form)}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, locale_form: to_form(changeset))}
     end
   end
 end

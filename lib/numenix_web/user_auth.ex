@@ -153,6 +153,9 @@ defmodule NumenixWeb.UserAuth do
     socket = mount_current_user(socket, session)
 
     if socket.assigns.current_user do
+      NumenixWeb.Gettext
+      |> Gettext.put_locale(socket.assigns.current_user.locale)
+
       {:cont, socket}
     else
       socket =

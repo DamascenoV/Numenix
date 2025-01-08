@@ -164,4 +164,10 @@ defmodule Numenix.Users.User do
       add_error(changeset, :current_password, "is not valid")
     end
   end
+
+  def locale_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:locale])
+    |> validate_inclusion(:locale, Gettext.known_locales(NumenixWeb.Gettext))
+  end
 end
