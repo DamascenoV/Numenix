@@ -22,6 +22,12 @@ defmodule Numenix.Currencies do
     Repo.all(from c in Currency, where: c.user_id == ^user.id)
   end
 
+  def list_currencies(user = %User{}, params) do
+    Currency
+    |> where(user_id: ^user.id)
+    |> Flop.validate_and_run(params, for: Currency)
+  end
+
   @doc """
   Gets a single currency.
 
@@ -88,7 +94,9 @@ defmodule Numenix.Currencies do
 
   """
   def delete_currency(%Currency{} = currency) do
-    Repo.delete(currency)
+    currency
+    |> Currency.delete_changeset()
+    |> Repo.delete()
   end
 
   @doc """

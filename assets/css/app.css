@@ -3,3 +3,42 @@
 @import "tailwindcss/utilities";
 
 /* This file is for your main application CSS */
+
+.table-container {
+        @apply bg-white rounded-lg shadow-md p-5;
+        overflow-x: auto;
+        white-space: nowrap;
+        transition: background-color 0.3s ease;
+}
+
+/* Generic table styling */
+table {
+        @apply w-full border-collapse;
+        @apply mt-4;
+}
+
+table thead th {
+        @apply text-left font-normal pb-2 border-b-2 border-gray-200 font-bold;
+}
+
+table thead th:last-child {
+        @apply text-right;
+}
+
+table tbody tr {
+        @apply border-b border-gray-200;
+}
+
+table tbody tr:last-child {
+        @apply border-b-0;
+}
+
+table tbody td:last-child {
+        @apply text-right;
+}
+
+table td,
+table th {
+        @apply p-4 text-gray-700;
+}
+

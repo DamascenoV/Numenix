@@ -1,8 +1,8 @@
 defmodule NumenixWeb.CurrencyLive.Index do
   use NumenixWeb, :live_view
-
   alias Numenix.Currencies
   alias Numenix.Currencies.Currency
+  alias Phoenix.LiveView.JS
 
   @impl true
   def render(assigns) do
@@ -16,28 +16,25 @@ defmodule NumenixWeb.CurrencyLive.Index do
       </:actions>
     </.header>
 
-    <.table
+    <Flop.Phoenix.table
       id="currencies"
-      rows={@streams.currencies}
-      row_click={fn {_id, currency} -> JS.navigate(~p"/currencies/#{currency}") end}
+      items={@streams.currencies}
+      meta={@meta}
+      path={~p"/currencies"}
     >
-      <:col :let={{_id, currency}} label="Name">{currency.name}</:col>
-      <:col :let={{_id, currency}} label="Symbol">{currency.symbol}</:col>
-      <:action :let={{_id, currency}}>
-        <div class="sr-only">
-          <.link navigate={~p"/currencies/#{currency}"}>Show</.link>
-        </div>
+      <:col :let={{_id, currency}} label="Name" field={:name}>{currency.name}</:col>
+      <:col :let={{_id, currency}} label="Symbol" field={:symbol}>{currency.symbol}</:col>
+      <:col :let={{id, currency}} label="Actions">
+        <.link navigate={~p"/currencies/#{currency}"}>Show</.link>
         <.link patch={~p"/currencies/#{currency}/edit"}>Edit</.link>
-      </:action>
-      <:action :let={{id, currency}}>
         <.link
           phx-click={JS.push("delete", value: %{id: currency.id}) |> hide("##{id}")}
           data-confirm="Are you sure?"
         >
           Delete
         </.link>
-      </:action>
-    </.table>
+      </:col>
+    </Flop.Phoenix.table>
 
     <.modal
       :if={@live_action in [:new, :edit]}
@@ -59,13 +56,42 @@ defmodule NumenixWeb.CurrencyLive.Index do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, stream(socket, :currencies, Currencies.list_currencies(socket.assigns.current_user))}
+  def mount(params, _session, socket) do
+    case fetch_currencies(socket.assigns.current_user, params) do
+      {:ok, meta} ->
+        {:ok, socket |> stream(:currencies, %{}) |> assign(:meta, meta)}
+
+      {:error, _reason} ->
+        {:ok, redirect(socket, to: ~p"/currencies")}
+    end
   end
 
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  @impl true
+  def handle_info({NumenixWeb.CurrencyLive.FormComponent, {:saved, currency}}, socket) do
+    {:noreply, stream_insert(socket, :currencies, currency)}
+  end
+
+  @impl true
+  def handle_event("delete", %{"id" => id}, socket) do
+    with currency <- Currencies.get_currency!(id),
+         {:ok, _deleted} <- Currencies.delete_currency(currency) do
+      {:noreply, stream_delete(socket, :currencies, currency)}
+    else
+      {:error, error} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           Ecto.Changeset.traverse_errors(error, fn {msg, _opts} -> msg end)
+           |> Enum.map(fn {_key, value} -> List.first(value) end)
+           |> List.first()
+         )}
+    end
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -80,22 +106,23 @@ defmodule NumenixWeb.CurrencyLive.Index do
     |> assign(:currency, %Currency{})
   end
 
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Listing Currencies")
-    |> assign(:currency, nil)
+  defp apply_action(socket, :index, params) do
+    case fetch_currencies(socket.assigns.current_user, params) do
+      {:ok, {currencies, meta}} ->
+        socket
+        |> assign(:page_title, "Listing Currencies")
+        |> stream(:currencies, currencies, reset: true)
+        |> assign(:meta, meta)
+
+      {:error, _reason} ->
+        redirect(socket, to: ~p"/currencies")
+    end
   end
 
-  @impl true
-  def handle_info({NumenixWeb.CurrencyLive.FormComponent, {:saved, currency}}, socket) do
-    {:noreply, stream_insert(socket, :currencies, currency)}
-  end
-
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    currency = Currencies.get_currency!(id)
-    {:ok, _} = Currencies.delete_currency(currency)
-
-    {:noreply, stream_delete(socket, :currencies, currency)}
+  defp fetch_currencies(current_user, params) do
+    case Currencies.list_currencies(current_user, params) do
+      {:ok, {currencies, meta}} -> {:ok, {currencies, meta}}
+      {:error, reason} -> {:error, reason}
+    end
   end
 end
