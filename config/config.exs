@@ -64,6 +64,13 @@ config :phoenix, :json_library, Jason
 # Gettext
 config :gettext, default_locale: "en", locales: ~w(en pt_BR)
 
+# Flop
+config :flop, repo: Numenix.Repo
+
+config :flop_phoenix,
+  pagination: [opts: {NumenixWeb.FlopConfig, :pagination_opts}],
+  table: [opts: {NumenixWeb.FlopConfig, :table_opts}]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

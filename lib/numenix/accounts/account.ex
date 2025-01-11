@@ -19,5 +19,7 @@ defmodule Numenix.Accounts.Account do
     account
     |> cast(attrs, [:name, :balance, :currency_id])
     |> validate_required([:name, :balance, :currency_id])
+    |> foreign_key_constraint(:currency_id)
+    |> foreign_key_constraint(:user_id)
   end
 end
