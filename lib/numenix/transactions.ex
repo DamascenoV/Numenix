@@ -22,9 +22,8 @@ defmodule Numenix.Transactions do
       [%Type{}, ...]
 
   """
-  def list_types do
-    Repo.all(Type)
-  end
+  def list_types, do: Repo.all(Type)
+  def list_types(params), do: Flop.validate_and_run(Type, params, for: Type)
 
   @doc """
   Gets a single type.
