@@ -16,31 +16,23 @@ defmodule NumenixWeb.GoalLive.Index do
       </:actions>
     </.header>
 
-    <.table
-      id="goals"
-      rows={@streams.goals}
-      row_click={fn {_id, goal} -> JS.navigate(~p"/goals/#{goal}") end}
-    >
-      <:col :let={{_id, goal}} label="Account">{goal.account.name}</:col>
-      <:col :let={{_id, goal}} label="Name">{goal.name}</:col>
-      <:col :let={{_id, goal}} label="Description">{goal.description}</:col>
-      <:col :let={{_id, goal}} label="Amount">{goal.amount}</:col>
-      <:col :let={{_id, goal}} label="Done">{goal.done}</:col>
-      <:action :let={{_id, goal}}>
-        <div class="sr-only">
-          <.link navigate={~p"/goals/#{goal}"}>Show</.link>
-        </div>
+    <Flop.Phoenix.table id="goals" items={@streams.goals} meta={@meta} path={~p"/goals"}>
+      <:col :let={{_id, goal}} label="Account" field={:account}>{goal.account.name}</:col>
+      <:col :let={{_id, goal}} label="Name" field={:name}>{goal.name}</:col>
+      <:col :let={{_id, goal}} label="Description" field={:description}>{goal.description}</:col>
+      <:col :let={{_id, goal}} label="Amount" field={:amount}>{goal.amount}</:col>
+      <:col :let={{_id, goal}} label="Done" field={:done}>{goal.done}</:col>
+      <:col :let={{id, goal}}>
+        <.link navigate={~p"/goals/#{goal}"}>Show</.link>
         <.link patch={~p"/goals/#{goal}/edit"}>Edit</.link>
-      </:action>
-      <:action :let={{id, goal}}>
         <.link
           phx-click={JS.push("delete", value: %{id: goal.id}) |> hide("##{id}")}
           data-confirm="Are you sure?"
         >
           Delete
         </.link>
-      </:action>
-    </.table>
+      </:col>
+    </Flop.Phoenix.table>
 
     <.modal :if={@live_action in [:new, :edit]} id="goal-modal" show on_cancel={JS.patch(~p"/goals")}>
       <.live_component
@@ -58,11 +50,17 @@ defmodule NumenixWeb.GoalLive.Index do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> stream(:goals, Accounts.list_goals(socket.assigns.current_user))
-     |> assign(:accounts, Accounts.list_accounts(socket.assigns.current_user))}
+  def mount(params, _session, socket) do
+    case fetch_goals(socket.assigns.current_user, params) do
+      {:ok, meta} ->
+        {:ok,
+         socket
+         |> assign(:meta, meta)
+         |> assign(:accounts, Accounts.list_accounts(socket.assigns.current_user))}
+
+      {:error, _reason} ->
+        {:ok, redirect(socket, to: ~p"/goals")}
+    end
   end
 
   @impl true
@@ -82,10 +80,17 @@ defmodule NumenixWeb.GoalLive.Index do
     |> assign(:goal, %Goal{})
   end
 
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Listing Goals")
-    |> assign(:goal, nil)
+  defp apply_action(socket, :index, params) do
+    case fetch_goals(socket.assigns.current_user, params) do
+      {:ok, {goals, meta}} ->
+        socket
+        |> stream(:goals, goals, reset: true)
+        |> assign(:page_title, "Listing Goals")
+        |> assign(:meta, meta)
+
+      {:error, _reason} ->
+        {:ok, redirect(socket, to: ~p"/goals")}
+    end
   end
 
   @impl true
@@ -99,5 +104,12 @@ defmodule NumenixWeb.GoalLive.Index do
     {:ok, _} = Accounts.delete_goal(goal)
 
     {:noreply, stream_delete(socket, :goals, goal)}
+  end
+
+  defp fetch_goals(current_user, params) do
+    case Accounts.list_goals(current_user, params) do
+      {:ok, {goals, meta}} -> {:ok, {goals, meta}}
+      {:error, reason} -> {:error, reason}
+    end
   end
 end

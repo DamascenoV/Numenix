@@ -2,6 +2,14 @@ defmodule Numenix.Accounts.Goal do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {
+    Flop.Schema,
+    filterable: [:name, :description, :amount, :done, :account_id],
+    sortable: [:name, :description, :amount, :done, :account_id],
+    max_limit: 5,
+    default_limit: 5
+  }
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "goals" do
