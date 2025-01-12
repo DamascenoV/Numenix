@@ -2,6 +2,20 @@ defmodule Numenix.Transactions.Type do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {
+    Flop.Schema,
+    filterable: [
+      :name,
+      :subtraction
+    ],
+    sortable: [
+      :name,
+      :subtraction
+    ],
+    max_limit: 5,
+    default_limit: 5
+  }
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "types" do

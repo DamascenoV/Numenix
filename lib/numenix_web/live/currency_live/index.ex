@@ -59,7 +59,7 @@ defmodule NumenixWeb.CurrencyLive.Index do
   def mount(params, _session, socket) do
     case fetch_currencies(socket.assigns.current_user, params) do
       {:ok, meta} ->
-        {:ok, socket |> stream(:currencies, %{}) |> assign(:meta, meta)}
+        {:ok, socket |> assign(:meta, meta)}
 
       {:error, _reason} ->
         {:ok, redirect(socket, to: ~p"/currencies")}
