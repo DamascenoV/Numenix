@@ -16,28 +16,25 @@ defmodule NumenixWeb.CategoryLive.Index do
       </:actions>
     </.header>
 
-    <.table
+    <Flop.Phoenix.table
       id="categories"
-      rows={@streams.categories}
-      row_click={fn {_id, category} -> JS.navigate(~p"/categories/#{category}") end}
+      items={@streams.categories}
+      meta={@meta}
+      path={~p"/categories"}
     >
-      <:col :let={{_id, category}} label="Name">{category.name}</:col>
-      <:col :let={{_id, category}} label="Type">{category.type.name}</:col>
-      <:action :let={{_id, category}}>
-        <div class="sr-only">
-          <.link navigate={~p"/categories/#{category}"}>Show</.link>
-        </div>
+      <:col :let={{_id, category}} label="Name" field={:name}>{category.name}</:col>
+      <:col :let={{_id, category}} label="Type" field={:type_name}>{category.type.name}</:col>
+      <:col :let={{id, category}}>
+        <.link navigate={~p"/categories/#{category}"}>Show</.link>
         <.link patch={~p"/categories/#{category}/edit"}>Edit</.link>
-      </:action>
-      <:action :let={{id, category}}>
         <.link
           phx-click={JS.push("delete", value: %{id: category.id}) |> hide("##{id}")}
           data-confirm="Are you sure?"
         >
           Delete
         </.link>
-      </:action>
-    </.table>
+      </:col>
+    </Flop.Phoenix.table>
 
     <.modal
       :if={@live_action in [:new, :edit]}
@@ -60,11 +57,17 @@ defmodule NumenixWeb.CategoryLive.Index do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> stream(:categories, Transactions.list_categories(socket.assigns.current_user))
-     |> assign(:types, Transactions.list_types())}
+  def mount(params, _session, socket) do
+    case fetch_categories(socket.assigns.current_user, params) do
+      {:ok, meta} ->
+        {:ok,
+         socket
+         |> assign(:types, Transactions.list_types())
+         |> assign(:meta, meta)}
+
+      {:error, _reason} ->
+        {:ok, redirect(socket, to: ~p"/categories")}
+    end
   end
 
   @impl true
@@ -84,10 +87,15 @@ defmodule NumenixWeb.CategoryLive.Index do
     |> assign(:category, %Category{})
   end
 
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Listing Categories")
-    |> assign(:category, nil)
+  defp apply_action(socket, :index, params) do
+    case fetch_categories(socket.assigns.current_user, params) do
+      {:ok, {categories, meta}} ->
+        socket
+        |> stream(:categories, categories, reset: true)
+        |> assign(:page_title, "Listing Categories")
+        |> assign(:types, Transactions.list_types())
+        |> assign(:meta, meta)
+    end
   end
 
   @impl true
@@ -101,5 +109,12 @@ defmodule NumenixWeb.CategoryLive.Index do
     {:ok, _} = Transactions.delete_category(category)
 
     {:noreply, stream_delete(socket, :categories, category)}
+  end
+
+  defp fetch_categories(current_user, params) do
+    case Transactions.list_categories(current_user, params) do
+      {:ok, {categories, meta}} -> {:ok, {categories, meta}}
+      {:error, reason} -> {:error, reason}
+    end
   end
 end
