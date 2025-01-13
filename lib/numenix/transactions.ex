@@ -85,6 +85,14 @@ defmodule Numenix.Transactions do
     Repo.all(from c in Category, where: c.user_id == ^user.id, preload: :type)
   end
 
+  def list_categories(user = %User{}, params) do
+    Category
+    |> where(user_id: ^user.id)
+    |> join(:left, [c], t in assoc(c, :type), as: :type)
+    |> preload([t], [:type])
+    |> Flop.validate_and_run(params, for: Category)
+  end
+
   @doc """
   Gets a single category.
 
