@@ -25,6 +25,14 @@ defmodule Numenix.Accounts do
     Repo.all(from a in Account, where: a.user_id == ^user.id, preload: :currency)
   end
 
+  def list_accounts(user = %User{}, params) do
+    Account
+    |> where(user_id: ^user.id)
+    |> join(:left, [a], c in assoc(a, :currency), as: :currency)
+    |> preload([:currency])
+    |> Flop.validate_and_run(params, for: Account)
+  end
+
   @doc """
   Gets a single account.
 

@@ -16,29 +16,21 @@ defmodule NumenixWeb.AccountLive.Index do
       </:actions>
     </.header>
 
-    <.table
-      id="account"
-      rows={@streams.accounts}
-      row_click={fn {_id, account} -> JS.navigate(~p"/accounts/#{account}") end}
-    >
-      <:col :let={{_id, account}} label="Name">{account.name}</:col>
-      <:col :let={{_id, account}} label="Balance">{account.balance}</:col>
-      <:col :let={{_id, account}} label="Currency">{account.currency.symbol}</:col>
-      <:action :let={{_id, account}}>
-        <div class="sr-only">
-          <.link navigate={~p"/accounts/#{account}"}>Show</.link>
-        </div>
+    <Flop.Phoenix.table id="account" items={@streams.accounts} meta={@meta} path={~p"/accounts"}>
+      <:col :let={{_id, account}} label="Name" field={:name}>{account.name}</:col>
+      <:col :let={{_id, account}} label="Balance" field={:balance}>{account.balance}</:col>
+      <:col :let={{_id, account}} label="Currency" field={:currency}>{account.currency.symbol}</:col>
+      <:col :let={{id, account}}>
+        <.link navigate={~p"/accounts/#{account}"}>Show</.link>
         <.link patch={~p"/accounts/#{account}/edit"}>Edit</.link>
-      </:action>
-      <:action :let={{id, account}}>
         <.link
           phx-click={JS.push("delete", value: %{id: account.id}) |> hide("##{id}")}
           data-confirm="Are you sure?"
         >
           Delete
         </.link>
-      </:action>
-    </.table>
+      </:col>
+    </Flop.Phoenix.table>
 
     <.modal
       :if={@live_action in [:new, :edit]}
@@ -61,13 +53,19 @@ defmodule NumenixWeb.AccountLive.Index do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     user = socket.assigns.current_user
 
-    {:ok,
-     socket
-     |> stream(:accounts, Accounts.list_accounts(user))
-     |> assign(:currencies, Numenix.Currencies.list_currencies(user))}
+    case fetch_accounts(user, params) do
+      {:ok, meta} ->
+        {:ok,
+         socket
+         |> assign(:currencies, Numenix.Currencies.list_currencies(user))
+         |> assign(:meta, meta)}
+
+      {:error, _reason} ->
+        {:ok, redirect(socket, to: ~p"/accounts")}
+    end
   end
 
   @impl true
@@ -87,10 +85,17 @@ defmodule NumenixWeb.AccountLive.Index do
     |> assign(:account, %Account{})
   end
 
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Listing Account")
-    |> assign(:account, nil)
+  defp apply_action(socket, :index, params) do
+    user = socket.assigns.current_user
+
+    case fetch_accounts(user, params) do
+      {:ok, {accounts, meta}} ->
+        socket
+        |> stream(:accounts, accounts, reset: true)
+        |> assign(:page_title, "Listing Accounts")
+        |> assign(:currencies, Numenix.Currencies.list_currencies(user))
+        |> assign(:meta, meta)
+    end
   end
 
   @impl true
@@ -104,5 +109,12 @@ defmodule NumenixWeb.AccountLive.Index do
     {:ok, _} = Accounts.delete_account(account)
 
     {:noreply, stream_delete(socket, :accounts, account)}
+  end
+
+  defp fetch_accounts(current_user, params) do
+    case Numenix.Accounts.list_accounts(current_user, params) do
+      {:ok, {accounts, meta}} -> {:ok, {accounts, meta}}
+      {:error, reason} -> {:error, reason}
+    end
   end
 end
