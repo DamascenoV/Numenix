@@ -216,6 +216,16 @@ defmodule Numenix.Transactions do
     )
   end
 
+  def list_transactions(user = %User{}, params) do
+    Transaction
+    |> join(:left, [t], a in assoc(t, :account), as: :account)
+    |> join(:left, [t, a], c in assoc(t, :category), as: :category)
+    |> join(:left, [t, a, c], ty in assoc(t, :type), as: :type)
+    |> preload([t, a, c, ty], [:account, :category, :type])
+    |> where([t, a, c, ty], a.user_id == ^user.id)
+    |> Flop.validate_and_run(params, for: Transaction)
+  end
+
   @doc """
   Gets a single transaction.
 
