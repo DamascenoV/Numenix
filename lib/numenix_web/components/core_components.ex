@@ -673,4 +673,57 @@ defmodule NumenixWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  attr :fields, :list, required: true
+  attr :meta, Flop.Meta, required: true
+  attr :id, :string, required: true
+  attr :on_change, :string, default: "update-filter"
+  attr :target, :string, default: nil
+
+  @doc """
+  Flop filter form for tables
+
+  ## Examples
+
+    <.filter_form id="table_filter"
+      fields={[name: [ label: gettext("Name"), op: :like, type: "text" ]]}
+      meta={@meta}
+    />
+  """
+  def filter_form(%{meta: meta} = assigns) do
+    assigns = assign(assigns, form: Phoenix.Component.to_form(meta), meta: nil)
+
+    ~H"""
+    <button id={"toggle-#{@id}"} phx-click={toggle_filter(@id)} class="flex">
+      <.icon name="hero-funnel" />
+      <span id={"chevron-#{@id}"} class="flex transition duration-200">
+        <.icon name="hero-chevron-down" />
+      </span>
+    </button>
+    <.form
+      for={@form}
+      id={@id}
+      phx-target={@target}
+      phx-change={@on_change}
+      phx-submit={@on_change}
+      class="border rounded-lg border-zinc-200 p-4 mt-4 hidden"
+    >
+      <div class={"grid grid-cols-#{length(@fields) + 1} gap-4"}>
+        <Flop.Phoenix.filter_fields :let={i} form={@form} fields={@fields}>
+          <.input field={i.field} label={i.label} type={i.type} phx-debounce={120} {i.rest} />
+        </Flop.Phoenix.filter_fields>
+      </div>
+    </.form>
+    """
+  end
+
+  defp toggle_filter(js \\ %JS{}, id) do
+    js
+    |> JS.toggle(
+      to: "##{id}",
+      in: {"transition ease-in-out duration-200", "opacity-0", "opacity-100"},
+      out: {"transition ease-in-out duration-200", "opacity-100", "opacity-0"}
+    )
+    |> JS.toggle_class("rotate-180", to: "#chevron-#{id}")
+  end
 end
