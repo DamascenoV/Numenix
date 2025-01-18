@@ -16,6 +16,23 @@ defmodule NumenixWeb.CategoryLive.Index do
       </:actions>
     </.header>
 
+    <.filter_form
+      id="category_filter"
+      fields={[
+        name: [
+          label: gettext("Name"),
+          op: :like,
+          type: "text"
+        ],
+        type_name: [
+          label: gettext("Type"),
+          op: :like,
+          type: "text"
+        ]
+      ]}
+      meta={@meta}
+    />
+
     <Flop.Phoenix.table
       id="categories"
       items={@streams.categories}
@@ -109,6 +126,12 @@ defmodule NumenixWeb.CategoryLive.Index do
     {:ok, _} = Transactions.delete_category(category)
 
     {:noreply, stream_delete(socket, :categories, category)}
+  end
+
+  @impl true
+  def handle_event("update-filter", params, socket) do
+    params = Map.delete(params, "_target")
+    {:noreply, apply_action(socket, :index, params)}
   end
 
   defp fetch_categories(current_user, params) do
