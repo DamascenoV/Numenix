@@ -19,31 +19,35 @@ defmodule NumenixWeb.TransactionLive.Index do
       </:actions>
     </.header>
 
-    <.table
+    <Flop.Phoenix.table
       id="transactions"
-      rows={@streams.transactions}
-      row_click={fn {_id, transaction} -> JS.navigate(~p"/transactions/#{transaction}") end}
+      items={@streams.transactions}
+      meta={@meta}
+      path={~p"/transactions"}
     >
-      <:col :let={{_id, transaction}} label="Date">{transaction.date}</:col>
-      <:col :let={{_id, transaction}} label="Description">{transaction.description}</:col>
-      <:col :let={{_id, transaction}} label="Amount">{transaction.amount}</:col>
+      <:col :let={{_id, transaction}} label="Date" field={:date}>{transaction.date}</:col>
+      <:col :let={{_id, transaction}} label="Description" field={:description}>
+        {transaction.description}
+      </:col>
+      <:col :let={{_id, transaction}} label="Amount" field={:amount}>{transaction.amount}</:col>
+      <:col :let={{_id, transaction}} label="Account" field={:account_name}>
+        {transaction.account.name}
+      </:col>
       <:col :let={{_id, transaction}} label="Account balance">{transaction.account_balance}</:col>
-      <:col :let={{_id, transaction}} label="Category">{transaction.category.name}</:col>
-      <:action :let={{_id, transaction}}>
-        <div class="sr-only">
-          <.link navigate={~p"/transactions/#{transaction}"}>Show</.link>
-        </div>
+      <:col :let={{_id, transaction}} label="Category" field={:category_name}>
+        {transaction.category.name}
+      </:col>
+      <:col :let={{id, transaction}}>
+        <.link navigate={~p"/transactions/#{transaction}"}>Show</.link>
         <.link patch={~p"/transactions/#{transaction}/edit?type=#{transaction.type_id}"}>Edit</.link>
-      </:action>
-      <:action :let={{id, transaction}}>
         <.link
           phx-click={JS.push("delete", value: %{id: transaction.id}) |> hide("##{id}")}
           data-confirm="Are you sure?"
         >
           Delete
         </.link>
-      </:action>
-    </.table>
+      </:col>
+    </Flop.Phoenix.table>
 
     <.modal
       :if={@live_action in [:new, :edit]}
@@ -68,15 +72,21 @@ defmodule NumenixWeb.TransactionLive.Index do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     user = socket.assigns.current_user
 
-    {:ok,
-     socket
-     |> stream(:transactions, Transactions.list_transactions(user))
-     |> assign(:accounts, Accounts.list_accounts(user))
-     |> assign(:type_id, nil)
-     |> assign(:categories, nil)}
+    case fetch_transactions(socket.assigns.current_user, params) do
+      {:ok, meta} ->
+        {:ok,
+         socket
+         |> assign(:accounts, Accounts.list_accounts(user))
+         |> assign(:type_id, nil)
+         |> assign(:categories, nil)
+         |> assign(:meta, meta)}
+
+      {:error, _reason} ->
+        {:ok, redirect(socket, to: ~p"/transactions")}
+    end
   end
 
   @impl true
@@ -110,10 +120,14 @@ defmodule NumenixWeb.TransactionLive.Index do
     |> assign(:type_id, params["type"])
   end
 
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Listing Transactions")
-    |> assign(:transaction, nil)
+  defp apply_action(socket, :index, params) do
+    case fetch_transactions(socket.assigns.current_user, params) do
+      {:ok, {transactions, meta}} ->
+        socket
+        |> stream(:transactions, transactions, reset: true)
+        |> assign(:page_title, "Listing Transactions")
+        |> assign(:meta, meta)
+    end
   end
 
   @impl true
@@ -127,5 +141,12 @@ defmodule NumenixWeb.TransactionLive.Index do
     {:ok, _} = Transactions.delete_transaction(transaction)
 
     {:noreply, stream_delete(socket, :transactions, transaction)}
+  end
+
+  defp fetch_transactions(current_user, params) do
+    case Transactions.list_transactions(current_user, params) do
+      {:ok, {transactions, meta}} -> {:ok, {transactions, meta}}
+      {:error, reason} -> {:error, reason}
+    end
   end
 end
