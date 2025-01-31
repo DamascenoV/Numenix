@@ -16,6 +16,23 @@ defmodule NumenixWeb.CurrencyLive.Index do
       </:actions>
     </.header>
 
+    <.filter_form
+      id="currency_id"
+      fields={[
+        name: [
+          label: gettext("Name"),
+          op: :like,
+          type: "text"
+        ],
+        symbol: [
+          label: gettext("Symbol"),
+          op: :like,
+          type: "text"
+        ]
+      ]}
+      meta={@meta}
+    />
+
     <Flop.Phoenix.table
       id="currencies"
       items={@streams.currencies}
@@ -92,6 +109,12 @@ defmodule NumenixWeb.CurrencyLive.Index do
            |> List.first()
          )}
     end
+  end
+
+  @impl true
+  def handle_event("update-filter", params, socket) do
+    params = Map.delete(params, "_target")
+    {:noreply, apply_action(socket, :index, params)}
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
