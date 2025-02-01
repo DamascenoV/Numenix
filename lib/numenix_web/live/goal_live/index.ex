@@ -16,6 +16,33 @@ defmodule NumenixWeb.GoalLive.Index do
       </:actions>
     </.header>
 
+    <.filter_form
+      id="goal_id"
+      fields={[
+        name: [
+          label: gettext("Name"),
+          op: :like,
+          type: "text"
+        ],
+        description: [
+          label: gettext("Description"),
+          op: :like,
+          type: "text"
+        ],
+        amount: [
+          label: gettext("Amount"),
+          op: :==,
+          type: "number"
+        ],
+        done: [
+          label: gettext("Done"),
+          op: :==,
+          type: "checkbox"
+        ]
+      ]}
+      meta={@meta}
+    />
+
     <Flop.Phoenix.table id="goals" items={@streams.goals} meta={@meta} path={~p"/goals"}>
       <:col :let={{_id, goal}} label="Account" field={:account}>{goal.account.name}</:col>
       <:col :let={{_id, goal}} label="Name" field={:name}>{goal.name}</:col>
@@ -89,7 +116,7 @@ defmodule NumenixWeb.GoalLive.Index do
         |> assign(:meta, meta)
 
       {:error, _reason} ->
-        {:ok, redirect(socket, to: ~p"/goals")}
+        redirect(socket, to: ~p"/goals")
     end
   end
 
@@ -104,6 +131,12 @@ defmodule NumenixWeb.GoalLive.Index do
     {:ok, _} = Accounts.delete_goal(goal)
 
     {:noreply, stream_delete(socket, :goals, goal)}
+  end
+
+  @impl true
+  def handle_event("update-filter", params, socket) do
+    params = Map.delete(params, "_target")
+    {:noreply, apply_action(socket, :index, params)}
   end
 
   defp fetch_goals(current_user, params) do
