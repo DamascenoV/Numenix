@@ -75,7 +75,7 @@ defmodule NumenixWeb.CategoryLive.Index do
 
   @impl true
   def mount(params, _session, socket) do
-    case fetch_categories(socket.assigns.current_user, params) do
+    case Transactions.list_categories(socket.assigns.current_user, params) do
       {:ok, meta} ->
         {:ok,
          socket
@@ -105,7 +105,7 @@ defmodule NumenixWeb.CategoryLive.Index do
   end
 
   defp apply_action(socket, :index, params) do
-    case fetch_categories(socket.assigns.current_user, params) do
+    case Transactions.list_categories(socket.assigns.current_user, params) do
       {:ok, {categories, meta}} ->
         socket
         |> stream(:categories, categories, reset: true)
@@ -132,12 +132,5 @@ defmodule NumenixWeb.CategoryLive.Index do
   def handle_event("update-filter", params, socket) do
     params = Map.delete(params, "_target")
     {:noreply, apply_action(socket, :index, params)}
-  end
-
-  defp fetch_categories(current_user, params) do
-    case Transactions.list_categories(current_user, params) do
-      {:ok, {categories, meta}} -> {:ok, {categories, meta}}
-      {:error, reason} -> {:error, reason}
-    end
   end
 end

@@ -19,7 +19,7 @@ defmodule NumenixWeb.TypeLive.Index do
 
   @impl true
   def mount(params, _session, socket) do
-    case fetch_types(params) do
+    case Transactions.list_types(params) do
       {:ok, {_types, meta}} ->
         {:ok,
          socket
@@ -33,19 +33,12 @@ defmodule NumenixWeb.TypeLive.Index do
 
   @impl true
   def handle_params(params, _url, socket) do
-    case fetch_types(params) do
+    case Transactions.list_types(params) do
       {:ok, {types, meta}} ->
         {:noreply,
          socket
          |> stream(:types, types, reset: true)
          |> assign(:meta, meta)}
-    end
-  end
-
-  defp fetch_types(params) do
-    case Transactions.list_types(params) do
-      {:ok, {currencies, meta}} -> {:ok, {currencies, meta}}
-      {:error, reason} -> {:error, reason}
     end
   end
 end

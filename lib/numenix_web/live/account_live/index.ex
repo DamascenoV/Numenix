@@ -73,7 +73,7 @@ defmodule NumenixWeb.AccountLive.Index do
   def mount(params, _session, socket) do
     user = socket.assigns.current_user
 
-    case fetch_accounts(user, params) do
+    case Accounts.list_accounts(user, params) do
       {:ok, meta} ->
         {:ok,
          socket
@@ -105,7 +105,7 @@ defmodule NumenixWeb.AccountLive.Index do
   defp apply_action(socket, :index, params) do
     user = socket.assigns.current_user
 
-    case fetch_accounts(user, params) do
+    case Accounts.list_accounts(user, params) do
       {:ok, {accounts, meta}} ->
         socket
         |> stream(:accounts, accounts, reset: true)
@@ -132,12 +132,5 @@ defmodule NumenixWeb.AccountLive.Index do
   def handle_event("update-filter", params, socket) do
     params = Map.delete(params, "_target")
     {:noreply, apply_action(socket, :index, params)}
-  end
-
-  defp fetch_accounts(current_user, params) do
-    case Numenix.Accounts.list_accounts(current_user, params) do
-      {:ok, {accounts, meta}} -> {:ok, {accounts, meta}}
-      {:error, reason} -> {:error, reason}
-    end
   end
 end

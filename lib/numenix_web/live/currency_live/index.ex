@@ -74,7 +74,7 @@ defmodule NumenixWeb.CurrencyLive.Index do
 
   @impl true
   def mount(params, _session, socket) do
-    case fetch_currencies(socket.assigns.current_user, params) do
+    case Currencies.list_currencies(socket.assigns.current_user, params) do
       {:ok, meta} ->
         {:ok, socket |> assign(:meta, meta)}
 
@@ -130,7 +130,7 @@ defmodule NumenixWeb.CurrencyLive.Index do
   end
 
   defp apply_action(socket, :index, params) do
-    case fetch_currencies(socket.assigns.current_user, params) do
+    case Currencies.list_currencies(socket.assigns.current_user, params) do
       {:ok, {currencies, meta}} ->
         socket
         |> assign(:page_title, "Listing Currencies")
@@ -139,13 +139,6 @@ defmodule NumenixWeb.CurrencyLive.Index do
 
       {:error, _reason} ->
         redirect(socket, to: ~p"/currencies")
-    end
-  end
-
-  defp fetch_currencies(current_user, params) do
-    case Currencies.list_currencies(current_user, params) do
-      {:ok, {currencies, meta}} -> {:ok, {currencies, meta}}
-      {:error, reason} -> {:error, reason}
     end
   end
 end

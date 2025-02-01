@@ -112,7 +112,7 @@ defmodule NumenixWeb.TransactionLive.Index do
   def mount(params, _session, socket) do
     user = socket.assigns.current_user
 
-    case fetch_transactions(socket.assigns.current_user, params) do
+    case Transactions.list_transactions(socket.assigns.current_user, params) do
       {:ok, meta} ->
         {:ok,
          socket
@@ -158,7 +158,7 @@ defmodule NumenixWeb.TransactionLive.Index do
   end
 
   defp apply_action(socket, :index, params) do
-    case fetch_transactions(socket.assigns.current_user, params) do
+    case Transactions.list_transactions(socket.assigns.current_user, params) do
       {:ok, {transactions, meta}} ->
         socket
         |> stream(:transactions, transactions, reset: true)
@@ -184,12 +184,5 @@ defmodule NumenixWeb.TransactionLive.Index do
   def handle_event("update-filter", params, socket) do
     params = Map.delete(params, "_target")
     {:noreply, apply_action(socket, :index, params)}
-  end
-
-  defp fetch_transactions(current_user, params) do
-    case Transactions.list_transactions(current_user, params) do
-      {:ok, {transactions, meta}} -> {:ok, {transactions, meta}}
-      {:error, reason} -> {:error, reason}
-    end
   end
 end
