@@ -7,6 +7,7 @@ defmodule Numenix.Transactions.Transaction do
     filterable: [
       :date,
       :description,
+      :amount,
       :type_name,
       :category_name,
       :account_name
