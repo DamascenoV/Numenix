@@ -16,6 +16,23 @@ defmodule NumenixWeb.AccountLive.Index do
       </:actions>
     </.header>
 
+    <.filter_form
+      id="account_id"
+      fields={[
+        name: [
+          label: gettext("Name"),
+          op: :like,
+          type: "text"
+        ],
+        balance: [
+          label: gettext("Balance"),
+          op: :==,
+          type: "number"
+        ]
+      ]}
+      meta={@meta}
+    />
+
     <Flop.Phoenix.table id="account" items={@streams.accounts} meta={@meta} path={~p"/accounts"}>
       <:col :let={{_id, account}} label="Name" field={:name}>{account.name}</:col>
       <:col :let={{_id, account}} label="Balance" field={:balance}>{account.balance}</:col>
@@ -109,6 +126,12 @@ defmodule NumenixWeb.AccountLive.Index do
     {:ok, _} = Accounts.delete_account(account)
 
     {:noreply, stream_delete(socket, :accounts, account)}
+  end
+
+  @impl true
+  def handle_event("update-filter", params, socket) do
+    params = Map.delete(params, "_target")
+    {:noreply, apply_action(socket, :index, params)}
   end
 
   defp fetch_accounts(current_user, params) do
