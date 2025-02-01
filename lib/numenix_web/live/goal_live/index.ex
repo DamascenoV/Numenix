@@ -78,7 +78,7 @@ defmodule NumenixWeb.GoalLive.Index do
 
   @impl true
   def mount(params, _session, socket) do
-    case fetch_goals(socket.assigns.current_user, params) do
+    case Accounts.list_goals(socket.assigns.current_user, params) do
       {:ok, meta} ->
         {:ok,
          socket
@@ -108,7 +108,7 @@ defmodule NumenixWeb.GoalLive.Index do
   end
 
   defp apply_action(socket, :index, params) do
-    case fetch_goals(socket.assigns.current_user, params) do
+    case Accounts.list_goals(socket.assigns.current_user, params) do
       {:ok, {goals, meta}} ->
         socket
         |> stream(:goals, goals, reset: true)
@@ -137,12 +137,5 @@ defmodule NumenixWeb.GoalLive.Index do
   def handle_event("update-filter", params, socket) do
     params = Map.delete(params, "_target")
     {:noreply, apply_action(socket, :index, params)}
-  end
-
-  defp fetch_goals(current_user, params) do
-    case Accounts.list_goals(current_user, params) do
-      {:ok, {goals, meta}} -> {:ok, {goals, meta}}
-      {:error, reason} -> {:error, reason}
-    end
   end
 end
