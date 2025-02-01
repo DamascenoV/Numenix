@@ -19,6 +19,43 @@ defmodule NumenixWeb.TransactionLive.Index do
       </:actions>
     </.header>
 
+    <.filter_form
+      id="transaction_id"
+      fields={[
+        type_name: [
+          label: gettext("Type"),
+          op: :like,
+          type: "text"
+        ],
+        amount: [
+          label: gettext("Amount"),
+          op: :==,
+          type: "number"
+        ],
+        account_name: [
+          label: gettext("Account"),
+          op: :like,
+          type: "text"
+        ],
+        category_name: [
+          label: gettext("Category"),
+          op: :like,
+          type: "text"
+        ],
+        description: [
+          label: gettext("Description"),
+          op: :like,
+          type: "text"
+        ],
+        date: [
+          label: gettext("Date"),
+          op: :==,
+          type: "date"
+        ]
+      ]}
+      meta={@meta}
+    />
+
     <Flop.Phoenix.table
       id="transactions"
       items={@streams.transactions}
@@ -141,6 +178,12 @@ defmodule NumenixWeb.TransactionLive.Index do
     {:ok, _} = Transactions.delete_transaction(transaction)
 
     {:noreply, stream_delete(socket, :transactions, transaction)}
+  end
+
+  @impl true
+  def handle_event("update-filter", params, socket) do
+    params = Map.delete(params, "_target")
+    {:noreply, apply_action(socket, :index, params)}
   end
 
   defp fetch_transactions(current_user, params) do
